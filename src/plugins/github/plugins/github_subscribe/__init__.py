@@ -13,13 +13,15 @@ __author__ = "yanyongyu"
 import re
 
 from nonebot import on_command
+from nonebot.internal.matcher import Matcher
+from nonebot.internal.params import ArgPlainText
 from nonebot.log import logger
-from nonebot.params import Depends
-from nonebot.typing import T_State
+from nonebot.params import Depends, CommandArg
 from nonebot.permission import SUPERUSER
 from httpx import HTTPStatusError, TimeoutException
-from nonebot.adapters.telegram import Bot
-from nonebot.adapters.telegram.event import MessageEvent
+from nonebot.adapters.telegram import Bot, Message
+from nonebot.adapters.telegram.event import GroupMessageEvent
+
 
 from src.utils import allow_cancel
 
@@ -48,10 +50,9 @@ else:
     """
 
     @subscribe.handle()
-    async def handle_arg(bot: Bot, event: MessageEvent, state: T_State):
-        arg = event.get_plaintext().strip()
-        if arg:
-            state["full_name"] = arg
+    async def handle_arg(event: GroupMessageEvent, matcher: Matcher, arg: Message = CommandArg()):
+        if full_name := arg["text"]:
+            matcher.set_arg("full_name", full_name)
 
 
     @subscribe.got(
@@ -59,11 +60,10 @@ else:
         prompt="订阅仓库的全名？(e.g. owner/repo)",
         parameterless=[Depends(allow_cancel)],
     )
-    async def process_repo(bot: Bot, event: MessageEvent, state: T_State):
-        name = state["full_name"]
-        matched = re.match(REPO_REGEX, name)
+    async def process_repo(event: GroupMessageEvent, full_name: str = ArgPlainText()):
+        matched = re.match(REPO_REGEX, full_name)
         if not matched:
-            await subscribe.reject(f"仓库名 {name} 不合法！请重新发送或取消")
+            await subscribe.reject(f"仓库名 {full_name} 不合法！请重新发送或取消")
             return
         owner = matched.group("owner")
         repo_name = matched.group("repo")
