@@ -13,7 +13,7 @@ __author__ = "yanyongyu"
 from nonebot.matcher import Matcher
 from nonebot.adapters import Message
 from nonebot.params import EventMessage
-from nonebot.adapters.onebot.v11 import GroupMessageEvent, PrivateMessageEvent
+from nonebot.adapters.telegram.event import GroupMessageEvent, PrivateMessageEvent
 
 
 async def only_private(event: PrivateMessageEvent) -> bool:
