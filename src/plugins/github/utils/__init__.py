@@ -26,5 +26,5 @@ async def send_github_message(
     message: Union[str, Message, MessageSegment],
 ) -> Any:
     message_sent: Dict[str, Any] = await matcher.send(message)
-    set_message_info(str(message_sent["message_id"]), owner, repo, number)
+    set_message_info(str(message_sent["result"]["message_id"]), owner, repo, number)
     return message_sent
