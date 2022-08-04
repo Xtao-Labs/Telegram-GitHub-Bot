@@ -14,6 +14,7 @@ import re
 
 from nonebot import on_command
 from nonebot.log import logger
+from nonebot.params import Depends
 from nonebot.typing import T_State
 from nonebot.permission import SUPERUSER
 from httpx import HTTPStatusError, TimeoutException
@@ -46,15 +47,18 @@ else:
     订阅仓库事件（需要权限）
     """
 
-    subscribe.args_parser(allow_cancel)
-
     @subscribe.handle()
     async def handle_arg(bot: Bot, event: MessageEvent, state: T_State):
         arg = event.get_plaintext().strip()
         if arg:
             state["full_name"] = arg
 
-    @subscribe.got("full_name", prompt="订阅仓库的全名？(e.g. owner/repo)")
+
+    @subscribe.got(
+        "full_name",
+        prompt="订阅仓库的全名？(e.g. owner/repo)",
+        parameterless=[Depends(allow_cancel)],
+    )
     async def process_repo(bot: Bot, event: MessageEvent, state: T_State):
         name = state["full_name"]
         matched = re.match(REPO_REGEX, name)

@@ -77,6 +77,8 @@ async def check_exists(event: GroupMessageEvent, matcher: Matcher):
 )
 async def process_repo(event: GroupMessageEvent, full_name: str = ArgPlainText()):
     matched = re.match(REPO_REGEX, full_name)
+    if full_name == "取消":
+        await bind.finish("已取消绑定操作")
     if not matched:
         await bind.reject(f"仓库名 {full_name} 不合法！请重新发送或取消")
 
