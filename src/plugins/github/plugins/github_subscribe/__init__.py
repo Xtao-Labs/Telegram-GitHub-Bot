@@ -17,13 +17,8 @@ from nonebot.log import logger
 from nonebot.typing import T_State
 from nonebot.permission import SUPERUSER
 from httpx import HTTPStatusError, TimeoutException
-from nonebot.adapters.onebot.v11 import (
-    GROUP_ADMIN,
-    GROUP_OWNER,
-    PRIVATE_FRIEND,
-    Bot,
-    MessageEvent,
-)
+from nonebot.adapters.telegram import Bot
+from nonebot.adapters.telegram.event import MessageEvent
 
 from src.utils import allow_cancel
 
@@ -44,7 +39,7 @@ else:
     subscribe = on_command(
         "subscribe",
         priority=config.github_command_priority,
-        permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER | PRIVATE_FRIEND,
+        permission=SUPERUSER,
     )
     subscribe.__doc__ = """
     /subscribe owner/repo

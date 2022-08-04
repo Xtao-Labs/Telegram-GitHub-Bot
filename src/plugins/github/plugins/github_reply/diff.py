@@ -10,13 +10,13 @@
 """
 __author__ = "yanyongyu"
 
-import base64
-
 from nonebot import on_command
 from nonebot.typing import T_State
 from playwright.async_api import Error
 from httpx import HTTPStatusError, TimeoutException
-from nonebot.adapters.onebot.v11 import Bot, MessageEvent, MessageSegment
+from nonebot.adapters.telegram import Bot
+from nonebot.adapters.telegram.event import MessageEvent
+from nonebot.adapters.telegram.message import File
 
 from ...libs.redis import MessageInfo
 from ...utils import send_github_message
@@ -47,7 +47,7 @@ async def handle_diff(bot: Bot, event: MessageEvent, state: T_State):
             message_info.owner, message_info.repo, message_info.number, token
         )
     except TimeoutException:
-        await diff.finish(f"获取issue数据超时！请尝试重试")
+        await diff.finish("获取issue数据超时！请尝试重试")
     except HTTPStatusError:
         await diff.finish(
             f"仓库{message_info.owner}/{message_info.repo}"
@@ -57,9 +57,9 @@ async def handle_diff(bot: Bot, event: MessageEvent, state: T_State):
     try:
         img = await issue_diff_to_image(message_info.owner, message_info.repo, issue_)
     except TimeoutException:
-        await diff.finish(f"获取diff数据超时！请尝试重试")
+        await diff.finish("获取diff数据超时！请尝试重试")
     except Error:
-        await diff.finish(f"生成图片超时！请尝试重试")
+        await diff.finish("生成图片超时！请尝试重试")
     else:
         if img:
             await send_github_message(
@@ -67,5 +67,5 @@ async def handle_diff(bot: Bot, event: MessageEvent, state: T_State):
                 message_info.owner,
                 message_info.repo,
                 message_info.number,
-                MessageSegment.image(f"base64://{base64.b64encode(img).decode()}"),
+                File.photo(img),
             )

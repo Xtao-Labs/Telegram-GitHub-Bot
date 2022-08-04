@@ -11,13 +11,13 @@
 __author__ = "yanyongyu"
 
 import nonebot
-from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11_Adapter
+from nonebot.adapters.telegram import Adapter as TelegramAdapter
 
 nonebot.init()
 app = nonebot.get_asgi()
 
 driver = nonebot.get_driver()
-driver.register_adapter(ONEBOT_V11_Adapter)
+driver.register_adapter(TelegramAdapter)
 
 config = driver.config
 nonebot.load_all_plugins(set(config.plugins), set(config.plugin_dirs))

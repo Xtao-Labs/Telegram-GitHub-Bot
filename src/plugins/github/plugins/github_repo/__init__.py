@@ -14,14 +14,11 @@ import secrets
 from typing import Dict
 
 from nonebot import on_regex
+from nonebot.adapters.telegram.message import File
 from nonebot.typing import T_State
 from httpx import HTTPStatusError, TimeoutException
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    MessageEvent,
-    MessageSegment,
-    GroupMessageEvent,
-)
+from nonebot.adapters.telegram import Bot
+from nonebot.adapters.telegram.event import MessageEvent, GroupMessageEvent
 
 from ...libs.repo import get_repo
 from ... import github_config as config
@@ -72,7 +69,7 @@ async def handle(bot: Bot, event: MessageEvent, state: T_State):
 
     if not repo_.private:
         await issue.finish(
-            MessageSegment.image(
+            File.photo(
                 "https://opengraph.githubassets.com/"
                 f"{secrets.token_urlsafe(16)}/{repo_.full_name}"
             )

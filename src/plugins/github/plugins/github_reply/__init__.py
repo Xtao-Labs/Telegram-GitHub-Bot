@@ -13,7 +13,7 @@ __author__ = "yanyongyu"
 from nonebot.typing import T_State
 from nonebot.adapters import Bot, Event
 from nonebot.message import event_preprocessor
-from nonebot.adapters.onebot.v11 import MessageEvent
+from nonebot.adapters.telegram.event import MessageEvent
 
 from ... import github_config as config
 from ...libs.redis import get_message_info
@@ -27,10 +27,10 @@ async def is_github_reply(bot: Bot, event: Event, state: T_State):
 
 @event_preprocessor
 async def check_reply(bot: Bot, event: Event, state: T_State):
-    if not isinstance(event, MessageEvent) or not event.reply:
+    if not isinstance(event, MessageEvent) or not event.reply_to_message:
         return
 
-    message_id = event.reply.message_id
+    message_id = event.reply_to_message.message_id
     message_info = get_message_info(str(message_id))
     if message_info:
         # inject reply info into state

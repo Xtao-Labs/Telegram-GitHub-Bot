@@ -11,19 +11,15 @@
 __author__ = "yanyongyu"
 
 import re
-import base64
 from typing import Dict
 
 from nonebot import on_regex
 from nonebot.typing import T_State
 from playwright.async_api import Error
 from httpx import HTTPStatusError, TimeoutException
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    MessageEvent,
-    MessageSegment,
-    GroupMessageEvent,
-)
+from nonebot.adapters.telegram import Bot
+from nonebot.adapters.telegram.message import File
+from nonebot.adapters.telegram.event import MessageEvent, GroupMessageEvent
 
 from src.utils import only_group
 
@@ -71,13 +67,11 @@ async def handle(bot: Bot, event: MessageEvent, state: T_State):
     owner = group["owner"]
     repo = group["repo"]
     number = int(group["number"])
-    token = None
-    if get_user_token:
-        token = get_user_token(event.get_user_id())
+    token = get_user_token(event.get_user_id()) if get_user_token else None
     try:
         issue_ = await get_issue(owner, repo, number, token)
     except TimeoutException:
-        await issue.finish(f"获取issue数据超时！请尝试重试")
+        await issue.finish("获取issue数据超时！请尝试重试")
         return
     except HTTPStatusError:
         await issue.finish(f"仓库{owner}/{repo}不存在issue#{number}！")
@@ -86,9 +80,9 @@ async def handle(bot: Bot, event: MessageEvent, state: T_State):
     try:
         img = await issue_to_image(owner, repo, issue_)
     except TimeoutException:
-        await issue.finish(f"获取issue数据超时！请尝试重试")
+        await issue.finish("获取issue数据超时！请尝试重试")
     except Error:
-        await issue.finish(f"生成图片超时！请尝试重试")
+        await issue.finish("生成图片超时！请尝试重试")
     else:
         if img:
             await send_github_message(
@@ -96,7 +90,7 @@ async def handle(bot: Bot, event: MessageEvent, state: T_State):
                 owner,
                 repo,
                 number,
-                MessageSegment.image(f"base64://{base64.b64encode(img).decode()}"),
+                File.photo(img),
             )
 
 
@@ -113,7 +107,7 @@ issue_short.__doc__ = """
 async def handle_short(bot: Bot, event: GroupMessageEvent, state: T_State):
     group = state["_matched_dict"]
     number = int(group["number"])
-    full_name = get_group_bind_repo(str(event.group_id))
+    full_name = get_group_bind_repo(str(event.chat.id))
     if not full_name:
         await issue_short.finish("此群尚未与仓库绑定！")
     match = re.match(REPO_REGEX, full_name)
@@ -128,16 +122,16 @@ async def handle_short(bot: Bot, event: GroupMessageEvent, state: T_State):
     try:
         issue_ = await get_issue(owner, repo, number, token)
     except TimeoutException:
-        await issue.finish(f"获取issue数据超时！请尝试重试")
+        await issue.finish("获取issue数据超时！请尝试重试")
     except HTTPStatusError:
         await issue.finish(f"仓库{owner}/{repo}不存在issue#{number}！")
 
     try:
         img = await issue_to_image(owner, repo, issue_)
     except TimeoutException:
-        await issue.finish(f"获取issue数据超时！请尝试重试")
+        await issue.finish("获取issue数据超时！请尝试重试")
     except Error:
-        await issue.finish(f"生成图片超时！请尝试重试")
+        await issue.finish("生成图片超时！请尝试重试")
     else:
         if img:
             await send_github_message(
@@ -145,5 +139,5 @@ async def handle_short(bot: Bot, event: GroupMessageEvent, state: T_State):
                 owner,
                 repo,
                 number,
-                MessageSegment.image(f"base64://{base64.b64encode(img).decode()}"),
+                File.photo(img),
             )
